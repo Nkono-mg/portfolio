@@ -1,6 +1,8 @@
 import React from "react";
 import { getOnePost } from "@/lib/serverMethodes/blog/getOnePostMethod";
 import Link from "next/link";
+import "./article.css";
+import "prism-themes/themes/prism-vsc-dark-plus.css";
 
 export default async function AfficheArticle({ params }) {
   const { slug } = await params;
@@ -19,7 +21,10 @@ export default async function AfficheArticle({ params }) {
           </Link>
         ))}
       </p>
-      <p className="">{post.markdownArticle}</p>
+      <div
+        className="article_styles"
+        dangerouslySetInnerHTML={{ __html: post.markdownHTMLResult }}
+      ></div>
     </main>
   );
 }

@@ -16,7 +16,7 @@ export default async function Home() {
             <div className="pt-5 px-5 pb-7">
               <div className="flex items-baseline gap-x-4 text-xs">
                 <time
-                  datetime={new Date().toISOString()}
+                  dateTime={new Date().toISOString()}
                   className="text-gray-500 text-sm"
                 >
                   {new Date().toLocaleDateString("en-EN", {
@@ -29,7 +29,7 @@ export default async function Home() {
                   href={`/categories/author/${post.author}`}
                   className="ml-auto text-base text-gray-700 hover:text-gray-600 whitespace-nowrap truncate"
                 >
-                  {post.author}
+                  {post.author} Nkono
                 </Link>
               </div>
               <Link
