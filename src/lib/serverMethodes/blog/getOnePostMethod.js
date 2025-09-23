@@ -1,5 +1,6 @@
 import { connectToDB } from "@/lib/utils/db/connectToDB";
 import { Post } from "@/app/models/Post";
+import { Tag } from "@/app/models/Tag"; // <- Important !
 
 export async function getOnePost(slug) {
   try {

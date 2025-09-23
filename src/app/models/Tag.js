@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 const tagSchema = new mongoose.Schema({
   name: {
     type: String,
-    requred: true,
+    required: true,
     trim: true,
     unique: true,
-    lowerCase: true,
+    lowercase: true,
   },
   slug: {
     type: String,
