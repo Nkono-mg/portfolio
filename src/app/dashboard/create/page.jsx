@@ -1,16 +1,43 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { addPost } from "@/lib/serverActions/blog/postServerAction";
+import { useRouter } from "next/navigation";
 
 export default function FormArticle() {
+  //les hooks
   const [tags, setTags] = useState([]);
   const tagInputRef = useRef(null);
+  const submitButtonRef = useRef(null);
+  const serverValidationText = useRef(null);
+  const navigateTo = useRouter();
   //les fonctions
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     formData.set("tags", JSON.stringify(tags)); //ajouter les tags à post
-    addPost(formData);
+    serverValidationText.current.textContent = "";
+    submitButtonRef.current.textContent = "Saving Post ...";
+    submitButtonRef.current.disabled = true;
+    try {
+      const result = await addPost(formData);
+      if (result.success) {
+        submitButtonRef.current.textContent = "Post saved ✅";
+        let countDown = 3;
+        serverValidationText.current.textContent = `Redirecting in ${countDown}...`;
+        const interval = setInterval(() => {
+          countDown -= 1;
+          serverValidationText.current.textContent = `Redirecting in ${countDown}...`;
+          if (countDown === 0) {
+            clearInterval(interval);
+            navigateTo.push(`/article/${result.slug}`);
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      serverValidationText.current.textContent = `${error.message}`;
+      submitButtonRef.current.textContent = "Submit";
+      submitButtonRef.current.disabled = false;
+    }
   };
   const handleAddTag = () => {
     const newTag = tagInputRef.current.value.trim().toLowerCase();
@@ -102,9 +129,13 @@ export default function FormArticle() {
           required
           className="min-h-44 text-xl shadow appearance-none border rounded w-full p-8 text-gray-700 mb-4 focus:outline-slate-400"
         ></textarea>
-        <button className="min-w-44 bg-indigo-500 hover:bg-indigo-700 text-2xl text-white font-bold py-3 px-4 rounded border-none mb-4">
+        <button
+          ref={submitButtonRef}
+          className="min-w-44 bg-indigo-500 hover:bg-indigo-700 text-2xl text-white font-bold py-3 px-4 rounded border-none mb-4"
+        >
           Submit
         </button>
+        <p ref={serverValidationText}></p>
       </form>
     </main>
   );
