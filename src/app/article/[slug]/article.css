@@ -12,12 +12,9 @@
 .article_styles li {
   margin-bottom: 4px;
 }
-
 .article_styles {
   background: #060606;
-
-  color: aliceblue;
-  padding-left: 30px;
+  color: rgb(219, 214, 214);
 }
 .article_styles pre {
   display: block;

@@ -4,7 +4,7 @@ import React from "react";
 export default function Footer() {
   return (
     <footer className="text-center bg-white p-4 border-t border-t-zinc-300">
-      <Link href="#">Portfolio - All right reserved</Link>
+      <Link href="#">Designed by Nkono</Link>
     </footer>
   );
 }

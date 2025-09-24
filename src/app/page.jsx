@@ -8,8 +8,8 @@ export default async function Home() {
   return (
     <div className="u-main-container u-padding-content-container">
       <h1 className="t-main-title">Stay up to date</h1>
-      <p className="t-main-subtitle">Tech trending</p>
-      <p className="tex-md text-zinc-900">Latest articles</p>
+      <p className="t-main-subtitle">New Techs</p>
+      <p className="tex-md text-zinc-900">Latest Articles</p>
       <ul className="u-articles-grid">
         {posts.map((post, index) => (
           <li key={index} className="li-list-content">
