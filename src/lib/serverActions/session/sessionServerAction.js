@@ -6,24 +6,37 @@ import slugify from "slugify";
 import bcrypt from "bcryptjs";
 import { Session } from "@/app/models/Session";
 import { cookies } from "next/headers";
+import AppError from "@/lib/utils/errorhandler/errorHandler";
 
 export async function userRegister(formDataUser) {
   const { userName, email, password, confirmPassword } =
     Object.fromEntries(formDataUser);
-  if (userName.length < 3) {
-    return { success: false, message: "Username is too short" };
-  }
-  if (password.length < 6) {
-    return { success: false, message: "Password is too short" };
-  }
-  if (password !== confirmPassword) {
-    return { success: false, message: "Password is not the same" };
-  }
+
   try {
+    if (typeof userName !== "string" || userName.trim().length < 3) {
+      throw new AppError("Username must be at least 3 characters");
+    }
+    if (typeof password !== "string" || password.trim().length < 6) {
+      throw new AppError("Password must be at least 6 characters");
+    }
+    if (password !== confirmPassword) {
+      throw new AppError("Password is not the same");
+    }
+    //verification de mail
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (typeof email !== "string" || !emailRegex.test(email)) {
+      throw new AppError("Email invalid");
+    }
     await connectToDB();
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [{ email }, { userName }], //recherche le username ou le email
+    });
     if (user) {
-      throw new Error("Email already exist");
+      if (user.userName === userName) {
+        throw new AppError("Username already exist");
+      } else if (user.email === email) {
+        throw new AppError("Email already exist");
+      }
     }
     const normalizedUserName = slugify(userName, { lower: true, strict: true });
     const salt = await bcrypt.genSalt(10);
@@ -39,12 +52,18 @@ export async function userRegister(formDataUser) {
 
     return {
       success: true,
-      user: newUser,
+      user: {
+        id: newUser._id.toString(),
+        email: newUser.email,
+        userName: newUser.userName,
+      },
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : JSON.stringify(error);
-    throw new Error(errorMessage);
+    console.log(error);
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new Error("An error occured while registering");
   }
 }
 export async function loginUser(formDataUser) {
@@ -94,7 +113,7 @@ export async function loginUser(formDataUser) {
     return {
       success: true,
       user: {
-        id: user._id,
+        id: user._id.toString(),
         email: user.email,
         name: user.name,
       },
@@ -106,7 +125,7 @@ export async function loginUser(formDataUser) {
   }
 }
 export async function logoutUser() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const sessionId = cookieStore.get("sessionId")?.value;
   try {
     //suppression session côté serveur

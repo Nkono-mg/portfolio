@@ -33,12 +33,12 @@ export default function SignUp() {
         }, 1000);
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : JSON.stringify(error);
-      serverInfoRef.current.textContent = `${errorMessage}`;
+      console.log(error);
       submitButtonRef.current.textContent = "Submit";
       submitButtonRef.current.disabled = false;
-      return { success: false, message: errorMessage };
+      serverInfoRef.current.classList.remove("hidden");
+      serverInfoRef.current.textContent =
+        error?.message || "An unexpected error occurred";
     }
   };
 

@@ -11,6 +11,8 @@ import { markedHighlight } from "marked-highlight";
 import "prismjs/components/prism-markup";
 import "prismjs/components/prism-css";
 import "prismjs/components/prism-javascript";
+import AppError from "@/lib/utils/errorhandler/errorHandler";
+import { sessionInfo } from "@/lib/serverMethodes/session/sessionAction";
 
 //gestion attaque xss
 const window = new JSDOM("").window;
@@ -20,9 +22,30 @@ export async function addPost(formData) {
   const { title, markdownArticle, tags } = Object.fromEntries(formData);
 
   try {
+    //gestion de l'erreur
+    if (typeof title !== "string" || title.trim().length < 3) {
+      throw new AppError("Ivalid title");
+    }
+    if (
+      typeof markdownArticle !== "string" ||
+      markdownArticle.trim().length == 0
+    ) {
+      throw new AppError("Invalid markdown");
+    }
+    if (typeof tags !== "string") {
+      throw new AppError("Tags invalid");
+    }
     await connectToDB();
+    //verification de session
+    const session = await sessionInfo();
+    if (!session) {
+      throw new AppError("Please sign in");
+    }
     //gestion des tags
     const tagNameArray = JSON.parse(tags);
+    if (!Array.isArray(tagNameArray)) {
+      throw new AppError("Tags must be a valid array");
+    }
     const tagIds = await Promise.all(
       tagNameArray.map(async (tagName) => {
         const normalizedTagName = tagName.trim().toLowerCase();
@@ -68,8 +91,10 @@ export async function addPost(formData) {
       slug: savedPost.slug,
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : JSON.stringify(error);
-    throw new Error(errorMessage);
+    console.log("Error while creating the post: ", error);
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new Error(error.message);
   }
 }
