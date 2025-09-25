@@ -70,13 +70,15 @@ export async function loginUser(formDataUser) {
     if (existingSession) {
       //session exist déjà
       session = existingSession;
-      existingSession.expiresAt = new Dat(Date.now() + 1 * 24 * 60 * 1000);
-      existingSession.save();
+      existingSession.expiresAt = new Date(
+        Date.now() + 1 * 24 * 60 * 60 * 1000
+      );
+      await existingSession.save();
     } else {
       //session pas encore existe
       session = new Session({
         userId: user._id,
-        expiresAt: new Dat(Date.now() + 1 * 24 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
       });
       await session.save();
     }
@@ -91,10 +93,34 @@ export async function loginUser(formDataUser) {
     });
     return {
       success: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+      },
     };
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : JSON.stringify(error);
-    return { errorMessage };
+    return { success: false, message: errorMessage };
+  }
+}
+export async function logoutUser() {
+  const cookieStore = cookies();
+  const sessionId = cookieStore.get("sessionId")?.value;
+  try {
+    //suppression session côté serveur
+    await Session.findByIdAndDelete(sessionId);
+    //suppression session côté client
+    cookieStore.set("sessionId", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 0, //suppression de cookie immédiate
+      sameSite: "strict",
+    });
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error.message };
   }
 }

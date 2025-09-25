@@ -30,7 +30,7 @@ export default function SignIn() {
   };
   //fin fonctions
   return (
-    <form className="max-w-md mx-auto mt-32">
+    <form className="max-w-md mx-auto mt-32" onSubmit={handleSubmit}>
       <label htmlFor="email">Email</label>
       <input
         className="f-auth-input"
