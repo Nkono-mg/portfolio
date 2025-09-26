@@ -10,6 +10,7 @@ export default function FormArticle() {
   const submitButtonRef = useRef(null);
   const serverValidationText = useRef(null);
   const navigateTo = useRouter();
+  const imageUploadValidationText = useRef();
   //les fonctions
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,6 +58,33 @@ export default function FormArticle() {
       handleAddTag();
     }
   };
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    const validImageTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validImageTypes.includes(file.type)) {
+      imageUploadValidationText.current.textContent =
+        "Please upload a valid image(jpeg, png, webp)";
+      e.target.value = "";
+      return;
+    } else {
+      imageUploadValidationText.current.textContent = "";
+    }
+    const img = new Image();
+    img.addEventListener("load", checkImageSizeOnLoad);
+    function checkImageSizeOnLoad() {
+      if ((img.width > 1280) | (img.height > 720)) {
+        imageUploadValidationText.current.textContent =
+          "Image exceeds 1280x720";
+        e.target.value = "";
+        URL.revokeObjectURL(img.src);
+        return;
+      } else {
+        imageUploadValidationText.current.textContent = "";
+        URL.revokeObjectURL(img.src);
+      }
+    }
+    img.src = URL.createObjectURL(file);
+  };
   //fin fonctions
   return (
     <main className="u-main-container bg-white p-7 mt-32 mb-44">
@@ -73,6 +101,20 @@ export default function FormArticle() {
           required
           className="shadow border rounded w-full p-3 mb-7 text-gray-700 focus:outline-slate-400"
         />
+        {/* gestion de l'image */}
+        <div>
+          <label htmlFor="coverImage" className="f-label">
+            Cover image (1280x700 for the best quality or less
+          </label>
+          <input
+            type="file"
+            name="coverImage"
+            id="coverImage"
+            className="shadown cursor-pointer border rounded w-full p-3 text-gray-700 mb-2 focus:outline-none focus:shadow-outline"
+            onChange={handleFileChange}
+          />
+          <p ref={imageUploadValidationText} className="text-red-700 mb-7"></p>
+        </div>
         <div className="mb-10">
           <label htmlFor="tag" className="f-label">
             Add a tag(s) (optional, max 5)
